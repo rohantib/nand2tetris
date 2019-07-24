@@ -43,6 +43,7 @@ CHIP ALU {
 
     PARTS:
     // Process x and y - shortened with Mux4Way16
+    // TODO: Consider removing Mux4Way16 after counting total Nands
     Not16(in=x, out=notx);
     Not16(in=y, out=noty);
     Mux4Way16(a=x, b=notx, c=false, d=true, sel[0]=nx, sel[1]=zx, out=xout);
@@ -60,6 +61,6 @@ CHIP ALU {
     // Determine if out is all zero
     Or8Way(in=b1, out=t1);
     Or8Way(in=b2, out=t2);
-    Or(a=t1, b=t2, out=notzero);
+    Or(a=t1, b=t2, out=notzero); // TODO: Replace Or and Not with Mux
     Not(in=notzero, out=zr);
 }
