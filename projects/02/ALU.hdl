@@ -53,13 +53,11 @@ CHIP ALU {
     Add16(a=xout, b=yout, out=add);
     Mux16(a=and, b=add, sel=f, out=fout);
 
-    // Negate
+    // Negate and output with sub buses for Or8Way
     Not16(in=fout, out=notfout);
-
-    // Choose final output along with ng and split up output for Or8Way
     Mux16(a=fout, b=notfout, sel=no, out[0..7]=b1, out[8..15]=b2, out=out, out[15]=ng);
 
-    //Determine if out is all zero
+    // Determine if out is all zero
     Or8Way(in=b1, out=t1);
     Or8Way(in=b2, out=t2);
     Or(a=t1, b=t2, out=notzero);
