@@ -39,5 +39,40 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+    // A register
+    Mux16(a=instruction, b=ALUout, sel=instruction[15], out=ain);
+    Not(in=instruction[15], out=ainstructwriteA);
+    And(a=instruction[15], b=instruction[5], out=cinstructwriteA);
+    Or(a=ainstructwriteA, b=cinstructwriteA, out=writeA);
+    ARegister(in=ain, load=writeA, out=Aout, out[0..14]=addressM, out=nextinstr);
+
+    // D Register
+    And(a=instruction[15], b=instruction[4], out=writeD);
+    DRegister(in=ALUout, load=writeD, out=Dout);
+
+    // ALU
+    Mux16(a=Aout, b=inM, sel=instruction[12], out=ALUx);
+    ALU(x=Dout, y=ALUx, zx=instruction[11], nx=instruction[10], zy=instruction[9], 
+        ny=instruction[8], f=instruction[7], no=instruction[6], 
+        out=outM, out=ALUout, zr=zr, ng=ng);
+
+    // Write to Memory
+    And(a=instruction[15], b=instruction[3], out=writeM);
+
+    // Program Counter
+    Or(a=zr, b=ng, out=ngorzr);
+    Not(in=ngorzr, out=pos);
+    And(a=instruction[2], b=ng, out=jng);
+    And(a=instruction[1], b=zr, out=jzr);
+    And(a=instruction[0], b=pos, out=jpos);
+    Or(a=jng, b=jzr, out=j1j2);
+    Or(a=j1j2, b=jpos, out=jmpC);
+    And(a=jmpC, b=instruction[15], out=jmp);
+    
+    PC(in=nextinstr, load=jmp, inc=true, reset=reset, out[0..14]=pc);
+    // I learned only after that I had already implemented a counter as PC.hdl, so the code below is without it:
+    // Register(in=next, load=true, out=PCout, out[0..14]=pc);
+    // Inc16(in=PCout, out=inc);
+    // Mux16(a=inc, b=nextinstr, sel=jmp, out=nextaddr);
+    // Mux16(a=nextaddr, b=false, sel=reset, out=next);
 }

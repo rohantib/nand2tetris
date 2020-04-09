@@ -27,5 +27,19 @@ CHIP Memory {
     OUT out[16];
 
     PARTS:
-    // Put your code here:
+    // I forgot DMux exists when I wrote this, DMux4Way can be used to simply the code.
+    // However, this current code has less total gates.
+
+    // Write into memory
+    Not(in=address[14], out=datamem);
+    And(a=datamem, b=load, out=dataload);
+    RAM16K(in=in, load=dataload, address=address[0..13], out=dataout);
+    Not(in=address[13], out=nokbd);
+    And(a=address[14], b=nokbd, out=screen);
+    And(a=screen, b=load, out=screenload);
+    Screen(in=in, load=screenload, address=address[0..12], out=screenout);
+    Keyboard(out=kbdout);
+    // Read from memory
+    Mux16(a=screenout, b=kbdout, sel=address[13], out=periphout);
+    Mux16(a=dataout, b=periphout, sel=address[14], out=out);
 }
